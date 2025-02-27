@@ -1,19 +1,22 @@
 import express from "express";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 
-app.set("view engine", "ejs");
-app.use(express.static("public"));
-
-// Pastikan Express bisa menemukan views
-import { dirname } from "path";
-import { fileURLToPath } from "url";
+// Fix path views & public agar ditemukan dengan benar
 const __dirname = dirname(fileURLToPath(import.meta.url));
-app.set("views", __dirname + "/../views");
+app.set("views", join(__dirname, "../views"));
+app.set("view engine", "ejs");
+
+// Load file statis dari public/
+app.use("/public", express.static(join(__dirname, "../public")));
 
 app.get("/", (req, res) => {
-  res.render("index"); // Pastikan views/index.ejs ada!
+  res.render("index"); // Harus ada views/index.ejs
 });
 
-// Export sebagai handler untuk Vercel
-export default app;
+// Vercel butuh handler ini!
+export default (req, res) => {
+  return app(req, res);
+};
